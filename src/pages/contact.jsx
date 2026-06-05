@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react"
-import { Link } from "react-router-dom"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import useFetch from "../services/useFetch";
@@ -12,42 +11,66 @@ import CH from "../assets/contactheading.png"
 
 gsap.registerPlugin(ScrollTrigger)
 
+const INITIAL_FORM_DATA = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  company: "",
+  jobTitle: "",
+  message: "",
+  attachments: [],
+  captchaToken: "",
+}
+
+const CONTACT_FORM_ENDPOINT =
+  import.meta.env.VITE_CONTACT_FORM_ENDPOINT ||
+  "https://lightgray-magpie-707312.hostingersite.com/wp-json/custom/v1/contact-form"
+
+const RECAPTCHA_SITE_KEY =
+  import.meta.env.VITE_RECAPTCHA_SITE_KEY ||
+  "6LclJQ4tAAAAABecPDYcgxcSY1FgBRcXkeQKA742"
+
+const MAX_ATTACHMENTS = 5
+const MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024
+const MAX_TOTAL_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024
+
 function Contact() {
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    company: "",
-    jobTitle: "",
-    message: "",
-    attachments: [],
-    captchaToken: "",
-  })
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA)
 
   const [errors, setErrors] = useState({})
+  const [submitting, setSubmitting] = useState(false)
+  const [submitMessage, setSubmitMessage] = useState("")
+  const [submitError, setSubmitError] = useState("")
+  const captchaRef = useRef(null)
 
   const handleChange = (e) => {
     const { name, value, files } = e.target
+    setSubmitMessage("")
+    setSubmitError("")
 
     if (name === "attachments") {
       const selectedFiles = Array.from(files)
 
       let fileErrors = []
 
-      // Max 5 files
-      if (selectedFiles.length > 5) {
-        fileErrors.push("You can upload a maximum of 5 files.")
+      if (selectedFiles.length > MAX_ATTACHMENTS) {
+        fileErrors.push(`You can upload a maximum of ${MAX_ATTACHMENTS} files.`)
       }
 
-      // Validate file sizes
       const oversizedFiles = selectedFiles.filter(
-        (file) => file.size > 25 * 1024 * 1024
+        (file) => file.size > MAX_ATTACHMENT_SIZE_BYTES
       )
 
       if (oversizedFiles.length > 0) {
-        fileErrors.push("Each file must be less than 25MB.")
+        fileErrors.push("Each file must be less than 20MB.")
+      }
+
+      const totalSize = selectedFiles.reduce((sum, file) => sum + file.size, 0)
+
+      if (totalSize > MAX_TOTAL_ATTACHMENT_SIZE_BYTES) {
+        fileErrors.push("Total upload size must be less than 20MB.")
       }
 
       if (fileErrors.length > 0) {
@@ -123,6 +146,8 @@ function Contact() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setSubmitMessage("")
+    setSubmitError("")
 
     if (!validateForm()) return
 
@@ -135,16 +160,40 @@ function Contact() {
     })
 
     formData.attachments.forEach((file) => {
-      submitData.append("attachments", file)
+      submitData.append("attachments[]", file)
     })
 
-    console.log("Submitting:", submitData)
+    try {
+      setSubmitting(true)
 
-    alert("Form submitted successfully!")
+      const response = await fetch(CONTACT_FORM_ENDPOINT, {
+        method: "POST",
+        body: submitData,
+      })
+
+      const result = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message || "Could not send your message. Please try again."
+        )
+      }
+
+      setFormData({ ...INITIAL_FORM_DATA, attachments: [] })
+      e.currentTarget.reset()
+      captchaRef.current?.reset()
+      setSubmitMessage("Thank you. Your message has been sent successfully.")
+    } catch (error) {
+      captchaRef.current?.reset()
+      setFormData((prev) => ({ ...prev, captchaToken: "" }))
+      setSubmitError(error.message || "Could not send your message. Please try again.")
+    } finally {
+      setSubmitting(false)
+    }
+
   }
 
   const mainRef = useRef(null)
-  const ctxRef = useRef(null)
   const [showLoader, setShowLoader] = useState(true)
 
   const {
@@ -356,7 +405,7 @@ function Contact() {
                 />
 
                 <small>
-                  Max 5 files. Each file must be under 25MB.
+                  Max 5 files. Total upload size must be under 20MB.
                 </small>
 
                 {errors.attachments && (
@@ -381,7 +430,8 @@ function Contact() {
               </div>
               <div className="inputGroup">
                 <ReCAPTCHA
-                  sitekey="YOUR_SITE_KEY"
+                  ref={captchaRef}
+                  sitekey={RECAPTCHA_SITE_KEY}
                   onChange={(token) => {
                     setFormData((prev) => ({
                       ...prev,
@@ -393,6 +443,22 @@ function Contact() {
                       captcha: "",
                     }))
                   }}
+                  onExpired={() => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      captchaToken: "",
+                    }))
+                  }}
+                  onErrored={() => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      captchaToken: "",
+                    }))
+                    setErrors((prev) => ({
+                      ...prev,
+                      captcha: "Captcha could not load. Please refresh and try again.",
+                    }))
+                  }}
                 />
 
                 {errors.captcha && (
@@ -400,8 +466,16 @@ function Contact() {
                 )}
               </div>
 
-              <button className="submitBtn btn btn2" type="submit">
-                Submit
+              {submitMessage && (
+                <p className="formStatus success">{submitMessage}</p>
+              )}
+
+              {submitError && (
+                <p className="formStatus error">{submitError}</p>
+              )}
+
+              <button className="submitBtn btn btn2" type="submit" disabled={submitting}>
+                {submitting ? "Sending..." : "Submit"}
 
                 <svg
                   viewBox="0 0 16 16"
