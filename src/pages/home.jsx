@@ -703,7 +703,7 @@ function Home() {
           </div>
           <div className="videoCover">
             <video autoPlay loop playsInline muted>
-              <source src="https://olivedrab-hummingbird-426242.hostingersite.com/wp-content/uploads/2026/05/homeherov.mp4" type="video/mp4" />
+              <source src="https://lightgray-magpie-707312.hostingersite.com/wp-content/uploads/2026/05/homeherov.mp4" type="video/mp4" />
             </video>
           </div>
         </section>
@@ -757,7 +757,7 @@ function Home() {
             ABOUT US
           </span>
           <video autoPlay loop playsInline muted>
-            <source src="https://olivedrab-hummingbird-426242.hostingersite.com/wp-content/uploads/2026/05/homeabout.mp4" type="video/mp4" />
+            <source src="https://lightgray-magpie-707312.hostingersite.com/wp-content/uploads/2026/05/homeabout.mp4" type="video/mp4" />
           </video>
           <h2>{homeData?.about_us?.aboutus_description}</h2>
           <a className="btn btn2" href={homeData?.about_us?.aboutus_link?.url || "/about-us"}>{homeData?.about_us?.aboutus_link?.title}

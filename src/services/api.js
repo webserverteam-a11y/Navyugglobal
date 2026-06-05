@@ -1,5 +1,6 @@
 const BASE_URL =
-  "https://olivedrab-hummingbird-426242.hostingersite.com/wp-json/custom/v1";
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://lightgray-magpie-707312.hostingersite.com/wp-json/custom/v1";
 
 async function fetchAPI(endpoint) {
   const response = await fetch(`${BASE_URL}/${endpoint}`);
