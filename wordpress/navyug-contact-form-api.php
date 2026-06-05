@@ -17,25 +17,86 @@ add_action('rest_api_init', function () {
     ));
 });
 
-function navyug_contact_form_config($constant, $env, $default = '') {
+add_action('admin_menu', function () {
+    add_options_page(
+        'Navyug Contact Form',
+        'Navyug Contact Form',
+        'manage_options',
+        'navyug-contact-form',
+        'navyug_contact_form_settings_page'
+    );
+});
+
+add_action('admin_init', function () {
+    register_setting('navyug_contact_form_settings', 'navyug_sendgrid_api_key', array(
+        'type' => 'string',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+
+    register_setting('navyug_contact_form_settings', 'navyug_contact_to_email', array(
+        'type' => 'string',
+        'sanitize_callback' => 'sanitize_text_field',
+        'default' => 'navyugglobalventures@gmail.com,salvis.smglobal@gmail.com',
+    ));
+
+    register_setting('navyug_contact_form_settings', 'navyug_contact_from_email', array(
+        'type' => 'string',
+        'sanitize_callback' => 'sanitize_email',
+        'default' => 'navyugglobalventures@gmail.com',
+    ));
+});
+
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links) {
+    $settings_link = sprintf(
+        '<a href="%s">%s</a>',
+        esc_url(admin_url('options-general.php?page=navyug-contact-form')),
+        esc_html__('Settings', 'navyug-contact-form-api')
+    );
+
+    array_unshift($links, $settings_link);
+    return $links;
+});
+
+function navyug_contact_form_config($constant, $env, $option = '', $default = '') {
     if (defined($constant) && constant($constant)) {
         return constant($constant);
     }
 
     $value = getenv($env);
-    return $value ? $value : $default;
+    if ($value) {
+        return $value;
+    }
+
+    if ($option) {
+        $value = get_option($option);
+        if ($value) {
+            return $value;
+        }
+    }
+
+    return $default;
 }
 
 function navyug_contact_form_submit(WP_REST_Request $request) {
-    $sendgrid_api_key = navyug_contact_form_config('NAVYUG_SENDGRID_API_KEY', 'NAVYUG_SENDGRID_API_KEY');
+    $sendgrid_api_key = navyug_contact_form_config(
+        'NAVYUG_SENDGRID_API_KEY',
+        'NAVYUG_SENDGRID_API_KEY',
+        'navyug_sendgrid_api_key'
+    );
     $to_emails = navyug_contact_form_recipients(
         navyug_contact_form_config(
             'NAVYUG_CONTACT_TO_EMAIL',
             'NAVYUG_CONTACT_TO_EMAIL',
+            'navyug_contact_to_email',
             'navyugglobalventures@gmail.com,salvis.smglobal@gmail.com'
         )
     );
-    $from_email = navyug_contact_form_config('NAVYUG_CONTACT_FROM_EMAIL', 'NAVYUG_CONTACT_FROM_EMAIL', 'navyugglobalventures@gmail.com');
+    $from_email = navyug_contact_form_config(
+        'NAVYUG_CONTACT_FROM_EMAIL',
+        'NAVYUG_CONTACT_FROM_EMAIL',
+        'navyug_contact_from_email',
+        'navyugglobalventures@gmail.com'
+    );
 
     if (!$sendgrid_api_key || empty($to_emails)) {
         return new WP_Error(
@@ -142,6 +203,71 @@ function navyug_contact_form_submit(WP_REST_Request $request) {
         'success' => true,
         'message' => 'Message sent successfully.',
     ));
+}
+
+function navyug_contact_form_settings_page() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    $default_recipients = 'navyugglobalventures@gmail.com,salvis.smglobal@gmail.com';
+    $default_from = 'navyugglobalventures@gmail.com';
+    ?>
+    <div class="wrap">
+        <h1>Navyug Contact Form</h1>
+        <form method="post" action="options.php">
+            <?php settings_fields('navyug_contact_form_settings'); ?>
+            <table class="form-table" role="presentation">
+                <tr>
+                    <th scope="row">
+                        <label for="navyug_sendgrid_api_key">SendGrid API Key</label>
+                    </th>
+                    <td>
+                        <input
+                            type="password"
+                            id="navyug_sendgrid_api_key"
+                            name="navyug_sendgrid_api_key"
+                            value="<?php echo esc_attr(get_option('navyug_sendgrid_api_key')); ?>"
+                            class="regular-text"
+                            autocomplete="off"
+                        />
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="navyug_contact_to_email">Recipient Emails</label>
+                    </th>
+                    <td>
+                        <input
+                            type="text"
+                            id="navyug_contact_to_email"
+                            name="navyug_contact_to_email"
+                            value="<?php echo esc_attr(get_option('navyug_contact_to_email', $default_recipients)); ?>"
+                            class="large-text"
+                        />
+                        <p class="description">Separate multiple emails with commas.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="navyug_contact_from_email">From Email</label>
+                    </th>
+                    <td>
+                        <input
+                            type="email"
+                            id="navyug_contact_from_email"
+                            name="navyug_contact_from_email"
+                            value="<?php echo esc_attr(get_option('navyug_contact_from_email', $default_from)); ?>"
+                            class="regular-text"
+                        />
+                        <p class="description">This must be a verified sender in SendGrid.</p>
+                    </td>
+                </tr>
+            </table>
+            <?php submit_button(); ?>
+        </form>
+    </div>
+    <?php
 }
 
 function navyug_contact_form_collect_attachments(WP_REST_Request $request) {

@@ -4,15 +4,25 @@ Install `navyug-contact-form-api.php` as a WordPress plugin on the backend site:
 
 `https://lightgray-magpie-707312.hostingersite.com/`
 
-Add these constants to `wp-config.php` on the WordPress server, above the line that says "That's all, stop editing":
+After activation, go to:
+
+`WordPress Admin > Settings > Navyug Contact Form`
+
+Add:
+
+- SendGrid API key
+- Recipient emails: `navyugglobalventures@gmail.com,salvis.smglobal@gmail.com`
+- From email: `navyugglobalventures@gmail.com`
+
+The `From Email` address must be a verified sender in SendGrid.
+
+You can also configure the plugin with `wp-config.php` constants instead:
 
 ```php
 define('NAVYUG_SENDGRID_API_KEY', 'your-sendgrid-api-key');
 define('NAVYUG_CONTACT_TO_EMAIL', 'navyugglobalventures@gmail.com,salvis.smglobal@gmail.com');
 define('NAVYUG_CONTACT_FROM_EMAIL', 'navyugglobalventures@gmail.com');
 ```
-
-The `NAVYUG_CONTACT_FROM_EMAIL` address must be a verified sender in SendGrid.
 
 After activation, this endpoint should exist:
 
