@@ -8,8 +8,7 @@ Add these constants to `wp-config.php` on the WordPress server, above the line t
 
 ```php
 define('NAVYUG_SENDGRID_API_KEY', 'your-sendgrid-api-key');
-define('NAVYUG_RECAPTCHA_SECRET', 'your-recaptcha-secret-key');
-define('NAVYUG_CONTACT_TO_EMAIL', 'navyugglobalventures@gmail.com');
+define('NAVYUG_CONTACT_TO_EMAIL', 'navyugglobalventures@gmail.com,salvis.smglobal@gmail.com');
 define('NAVYUG_CONTACT_FROM_EMAIL', 'navyugglobalventures@gmail.com');
 ```
 

@@ -5,7 +5,6 @@ import useFetch from "../services/useFetch";
 import { getContactPageData } from "../services/api"
 import Loader from "../components/loader";
 import { Helmet } from "react-helmet-async";
-import ReCAPTCHA from "react-google-recaptcha";
 import CH from "../assets/contactheading.png"
 
 
@@ -20,16 +19,11 @@ const INITIAL_FORM_DATA = {
   jobTitle: "",
   message: "",
   attachments: [],
-  captchaToken: "",
 }
 
 const CONTACT_FORM_ENDPOINT =
   import.meta.env.VITE_CONTACT_FORM_ENDPOINT ||
   "https://lightgray-magpie-707312.hostingersite.com/wp-json/custom/v1/contact-form"
-
-const RECAPTCHA_SITE_KEY =
-  import.meta.env.VITE_RECAPTCHA_SITE_KEY ||
-  "6LclJQ4tAAAAABecPDYcgxcSY1FgBRcXkeQKA742"
 
 const MAX_ATTACHMENTS = 5
 const MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024
@@ -43,7 +37,6 @@ function Contact() {
   const [submitting, setSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState("")
   const [submitError, setSubmitError] = useState("")
-  const captchaRef = useRef(null)
 
   const handleChange = (e) => {
     const { name, value, files } = e.target
@@ -135,10 +128,6 @@ function Contact() {
       newErrors.message = "Message is required"
     }
 
-    if (!formData.captchaToken) {
-      newErrors.captcha = "Please verify captcha"
-    }
-
     setErrors(newErrors)
 
     return Object.keys(newErrors).length === 0
@@ -181,11 +170,8 @@ function Contact() {
 
       setFormData({ ...INITIAL_FORM_DATA, attachments: [] })
       e.currentTarget.reset()
-      captchaRef.current?.reset()
       setSubmitMessage("Thank you. Your message has been sent successfully.")
     } catch (error) {
-      captchaRef.current?.reset()
-      setFormData((prev) => ({ ...prev, captchaToken: "" }))
       setSubmitError(error.message || "Could not send your message. Please try again.")
     } finally {
       setSubmitting(false)
@@ -270,7 +256,7 @@ function Contact() {
     }, 1000)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [loading])
 
   useEffect(() => {
     if (!loading) {
@@ -428,44 +414,6 @@ function Contact() {
                   <span className="errorText">{errors.message}</span>
                 )}
               </div>
-              <div className="inputGroup">
-                <ReCAPTCHA
-                  ref={captchaRef}
-                  sitekey={RECAPTCHA_SITE_KEY}
-                  onChange={(token) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      captchaToken: token,
-                    }))
-
-                    setErrors((prev) => ({
-                      ...prev,
-                      captcha: "",
-                    }))
-                  }}
-                  onExpired={() => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      captchaToken: "",
-                    }))
-                  }}
-                  onErrored={() => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      captchaToken: "",
-                    }))
-                    setErrors((prev) => ({
-                      ...prev,
-                      captcha: "Captcha could not load. Please refresh and try again.",
-                    }))
-                  }}
-                />
-
-                {errors.captcha && (
-                  <span className="errorText">{errors.captcha}</span>
-                )}
-              </div>
-
               {submitMessage && (
                 <p className="formStatus success">{submitMessage}</p>
               )}

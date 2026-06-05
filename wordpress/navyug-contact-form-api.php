@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Navyug Contact Form API
- * Description: Adds a secure REST endpoint for the Navyug contact form with reCAPTCHA and SendGrid mail delivery.
+ * Description: Adds a REST endpoint for the Navyug contact form with SendGrid mail delivery.
  * Version: 1.0.0
  */
 
@@ -28,11 +28,16 @@ function navyug_contact_form_config($constant, $env, $default = '') {
 
 function navyug_contact_form_submit(WP_REST_Request $request) {
     $sendgrid_api_key = navyug_contact_form_config('NAVYUG_SENDGRID_API_KEY', 'NAVYUG_SENDGRID_API_KEY');
-    $recaptcha_secret = navyug_contact_form_config('NAVYUG_RECAPTCHA_SECRET', 'NAVYUG_RECAPTCHA_SECRET');
-    $to_email = navyug_contact_form_config('NAVYUG_CONTACT_TO_EMAIL', 'NAVYUG_CONTACT_TO_EMAIL', 'navyugglobalventures@gmail.com');
-    $from_email = navyug_contact_form_config('NAVYUG_CONTACT_FROM_EMAIL', 'NAVYUG_CONTACT_FROM_EMAIL', $to_email);
+    $to_emails = navyug_contact_form_recipients(
+        navyug_contact_form_config(
+            'NAVYUG_CONTACT_TO_EMAIL',
+            'NAVYUG_CONTACT_TO_EMAIL',
+            'navyugglobalventures@gmail.com,salvis.smglobal@gmail.com'
+        )
+    );
+    $from_email = navyug_contact_form_config('NAVYUG_CONTACT_FROM_EMAIL', 'NAVYUG_CONTACT_FROM_EMAIL', 'navyugglobalventures@gmail.com');
 
-    if (!$sendgrid_api_key || !$recaptcha_secret) {
+    if (!$sendgrid_api_key || empty($to_emails)) {
         return new WP_Error(
             'navyug_contact_missing_config',
             'Contact form mail service is not configured.',
@@ -47,9 +52,8 @@ function navyug_contact_form_submit(WP_REST_Request $request) {
     $company = sanitize_text_field($request->get_param('company'));
     $job_title = sanitize_text_field($request->get_param('jobTitle'));
     $message = sanitize_textarea_field($request->get_param('message'));
-    $captcha_token = sanitize_text_field($request->get_param('captchaToken'));
 
-    if (!$first_name || !$last_name || !$email || !$phone || !$message || !$captcha_token) {
+    if (!$first_name || !$last_name || !$email || !$phone || !$message) {
         return new WP_Error(
             'navyug_contact_required_fields',
             'Please complete all required fields.',
@@ -63,11 +67,6 @@ function navyug_contact_form_submit(WP_REST_Request $request) {
             'Please enter a valid email address.',
             array('status' => 422)
         );
-    }
-
-    $captcha_result = navyug_contact_form_verify_recaptcha($recaptcha_secret, $captcha_token);
-    if (is_wp_error($captcha_result)) {
-        return $captcha_result;
     }
 
     $attachments = navyug_contact_form_collect_attachments($request);
@@ -89,9 +88,7 @@ function navyug_contact_form_submit(WP_REST_Request $request) {
     $payload = array(
         'personalizations' => array(
             array(
-                'to' => array(
-                    array('email' => $to_email),
-                ),
+                'to' => $to_emails,
                 'subject' => $subject,
             ),
         ),
@@ -145,36 +142,6 @@ function navyug_contact_form_submit(WP_REST_Request $request) {
         'success' => true,
         'message' => 'Message sent successfully.',
     ));
-}
-
-function navyug_contact_form_verify_recaptcha($secret, $token) {
-    $response = wp_remote_post('https://www.google.com/recaptcha/api/siteverify', array(
-        'timeout' => 10,
-        'body' => array(
-            'secret' => $secret,
-            'response' => $token,
-            'remoteip' => isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '',
-        ),
-    ));
-
-    if (is_wp_error($response)) {
-        return new WP_Error(
-            'navyug_contact_recaptcha_unavailable',
-            'Captcha verification failed. Please try again.',
-            array('status' => 502)
-        );
-    }
-
-    $body = json_decode(wp_remote_retrieve_body($response), true);
-    if (empty($body['success'])) {
-        return new WP_Error(
-            'navyug_contact_recaptcha_failed',
-            'Captcha verification failed. Please try again.',
-            array('status' => 403)
-        );
-    }
-
-    return true;
 }
 
 function navyug_contact_form_collect_attachments(WP_REST_Request $request) {
@@ -272,6 +239,20 @@ function navyug_contact_form_collect_attachments(WP_REST_Request $request) {
     }
 
     return $attachments;
+}
+
+function navyug_contact_form_recipients($emails) {
+    $recipients = array();
+    $items = array_map('trim', explode(',', $emails));
+
+    foreach ($items as $email) {
+        $email = sanitize_email($email);
+        if (is_email($email)) {
+            $recipients[] = array('email' => $email);
+        }
+    }
+
+    return $recipients;
 }
 
 function navyug_contact_form_normalize_files($file_group) {
