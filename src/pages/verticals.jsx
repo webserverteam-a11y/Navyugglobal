@@ -269,6 +269,7 @@ function Verticals() {
       <Helmet>
         <title>{verticalsData?.seo?.meta_title}</title>
         <meta name="description" content={verticalsData?.seo?.meta_description}></meta>
+        <link rel="canonical" href={verticalsData?.seo?.meta_canonical} />
       </Helmet>
       {showLoader && <Loader />}
       <main className="verticals" ref={mainRef}>

@@ -136,6 +136,7 @@ function Companies() {
       <Helmet>
         <title>{companiesData?.seo?.meta_title}</title>
         <meta name="description" content={companiesData?.seo?.meta_description}></meta>
+        <link rel="canonical" href={companiesData?.seo?.meta_canonical} />
       </Helmet>
       {showLoader && <Loader />}
       <main className="companies" ref={mainRef}>

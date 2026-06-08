@@ -281,6 +281,7 @@ function Contact() {
       <Helmet>
         <title>{contactData?.seo?.meta_title}</title>
         <meta name="description" content={contactData?.seo?.meta_description}></meta>
+        <link rel="canonical" href={contactData?.seo?.meta_canonical} />
       </Helmet>
       {showLoader && <Loader />}
       <main ref={mainRef}>

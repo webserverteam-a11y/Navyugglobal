@@ -182,6 +182,7 @@ function BlogTemplate() {
       <Helmet>
         <title>{blogData?.seo?.meta_title}</title>
         <meta name="description" content={blogData?.seo?.meta_description}></meta>
+        <link rel="canonical" href={blogData?.seo?.meta_canonical} />
       </Helmet>
 
       <main className="blogTemplate" ref={mainRef}>

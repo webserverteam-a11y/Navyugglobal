@@ -458,6 +458,7 @@ function About() {
       <Helmet>
         <title>{aboutData?.seo?.meta_title}</title>
         <meta name="description" content={aboutData?.seo?.meta_description}></meta>
+        <link rel="canonical" href={aboutData?.seo?.meta_canonical} />
       </Helmet>
       {showLoader && <Loader />}
       <main className="about" ref={mainRef}>

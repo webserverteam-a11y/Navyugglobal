@@ -60,13 +60,12 @@ function Home() {
 
 
   const sortedBlogs = useMemo(() => {
-    if (!blogsData || !Array.isArray(blogsData)) return [];
-
-    return [...blogsData].sort(
+    const blogs = blogsData?.blogs;
+    if (!blogs || !Array.isArray(blogs)) return [];
+    return [...blogs].sort(
       (a, b) => new Date(b.date) - new Date(a.date)
     );
   }, [blogsData]);
-
   /* =========================================
      FEATURED BLOG
      (NOT FILTERED)
@@ -450,7 +449,7 @@ function Home() {
                 Math.floor(counter.value)
               ).padStart(2, "0")
 
-             el.innerHTML = `${value}<span class="smallAsterisk">*</span>${suffix}`
+              el.innerHTML = `${value}<span class="smallAsterisk">*</span>${suffix}`
             },
 
             scrollTrigger: {
@@ -684,6 +683,7 @@ function Home() {
       <Helmet>
         <title>{homeData?.seo?.meta_title}</title>
         <meta name="description" content={homeData?.seo?.meta_description}></meta>
+        <link rel="canonical" href={homeData?.seo?.meta_canonical} />
       </Helmet>
       {showLoader && <Loader />}
       <main ref={mainRef}>
@@ -713,11 +713,13 @@ function Home() {
           <Slider {...logoSettings}>
             {companiesData?.portfolio?.portfolio_card?.map((item, index) => (
               <div key={index} className="logo-slide">
-                <img
-                  src={item?.logo?.url}
-                  alt={item?.logo?.alt}
-                  className="company-logo"
-                />
+                <a target="_blank" href={item?.website_link || "#"}>
+                  <img
+                    src={item?.logo?.url}
+                    alt={item?.logo?.alt}
+                    className="company-logo"
+                  />
+                </a>
               </div>
             ))}
           </Slider>
@@ -728,11 +730,13 @@ function Home() {
           <Slider {...logoSettingsM}>
             {companiesData?.portfolio?.portfolio_card?.map((item, index) => (
               <div key={index} className="logo-slide">
-                <img
-                  src={item?.logo?.url}
-                  alt={item?.logo?.alt}
-                  className="company-logo"
-                />
+                <a target="_blank" href={item?.website_link || "#"}>
+                  <img
+                    src={item?.logo?.url}
+                    alt={item?.logo?.alt}
+                    className="company-logo"
+                  />
+                </a>
               </div>
             ))}
           </Slider>

@@ -36,6 +36,7 @@ function Blogs() {
     error: blogsError,
   } = useFetch(getBlogsData);
 
+
   const loading = mediaLoading || blogsLoading;
   const error = mediaError || blogsError;
 
@@ -43,13 +44,12 @@ function Blogs() {
      SORT BLOGS (LATEST FIRST)
   ========================================= */
   const sortedBlogs = useMemo(() => {
-    if (!blogsData || !Array.isArray(blogsData)) return [];
-
-    return [...blogsData].sort(
+    const blogs = blogsData?.blogs;
+    if (!blogs || !Array.isArray(blogs)) return [];
+    return [...blogs].sort(
       (a, b) => new Date(b.date) - new Date(a.date)
     );
   }, [blogsData]);
-
   /* =========================================
      FEATURED BLOG
      (NOT FILTERED)
@@ -217,6 +217,7 @@ function Blogs() {
       <Helmet>
         <title>{mediaData?.seo?.meta_title}</title>
         <meta name="description" content={mediaData?.seo?.meta_description}></meta>
+        <link rel="canonical" href={mediaData?.seo?.meta_canonical} />
       </Helmet>
       {showLoader && <Loader />}
 
@@ -352,8 +353,8 @@ function Blogs() {
                   <span
                     key={index}
                     className={`blogFilterItem ${activeFilter === tag
-                        ? "blogFilterActive"
-                        : ""
+                      ? "blogFilterActive"
+                      : ""
                       }`}
                     onClick={() => setActiveFilter(tag)}
                   >
