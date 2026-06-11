@@ -50,18 +50,18 @@ function BlogTemplate() {
   /* =========================================
      RECENT POSTS
   ========================================= */
-  const recentPosts = useMemo(() => {
+const recentPosts = useMemo(() => {
+  const blogs = blogsData?.blogs;
 
-    if (!blogsData || !Array.isArray(blogsData)) {
-      return [];
-    }
+  if (!blogs || !Array.isArray(blogs)) {
+    return [];
+  }
 
-    return blogsData
-      .filter((blog) => blog.slug !== slug)
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 3);
-
-  }, [blogsData, slug]);
+  return blogs
+    .filter((blog) => blog.slug !== slug)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 3);
+}, [blogsData, slug]);
 
   /* =========================================
      GSAP
