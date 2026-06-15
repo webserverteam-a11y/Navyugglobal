@@ -50,18 +50,18 @@ function BlogTemplate() {
   /* =========================================
      RECENT POSTS
   ========================================= */
-const recentPosts = useMemo(() => {
-  const blogs = blogsData?.blogs;
+  const recentPosts = useMemo(() => {
+    const blogs = blogsData?.blogs;
 
-  if (!blogs || !Array.isArray(blogs)) {
-    return [];
-  }
+    if (!blogs || !Array.isArray(blogs)) {
+      return [];
+    }
 
-  return blogs
-    .filter((blog) => blog.slug !== slug)
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 3);
-}, [blogsData, slug]);
+    return blogs
+      .filter((blog) => blog.slug !== slug)
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 3);
+  }, [blogsData, slug]);
 
   /* =========================================
      GSAP
@@ -182,7 +182,7 @@ const recentPosts = useMemo(() => {
       <Helmet>
         <title>{blogData?.seo?.meta_title}</title>
         <meta name="description" content={blogData?.seo?.meta_description}></meta>
-        <link rel="canonical" href={blogData?.seo?.meta_canonical} />
+        <link rel="canonical" href={blogData?.seo?.canonical} />
       </Helmet>
 
       <main className="blogTemplate" ref={mainRef}>

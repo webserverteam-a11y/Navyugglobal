@@ -217,7 +217,7 @@ function Blogs() {
       <Helmet>
         <title>{mediaData?.seo?.meta_title}</title>
         <meta name="description" content={mediaData?.seo?.meta_description}></meta>
-        <link rel="canonical" href={mediaData?.seo?.meta_canonical} />
+        <link rel="canonical" href={mediaData?.seo?.canonical} />
       </Helmet>
       {showLoader && <Loader />}
 

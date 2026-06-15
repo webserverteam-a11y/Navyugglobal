@@ -683,7 +683,7 @@ function Home() {
       <Helmet>
         <title>{homeData?.seo?.meta_title}</title>
         <meta name="description" content={homeData?.seo?.meta_description}></meta>
-        <link rel="canonical" href={homeData?.seo?.meta_canonical} />
+        <link rel="canonical" href={homeData?.seo?.canonical} />
       </Helmet>
       {showLoader && <Loader />}
       <main ref={mainRef}>
