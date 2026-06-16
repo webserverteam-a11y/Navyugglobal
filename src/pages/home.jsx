@@ -20,7 +20,7 @@ import SE from "../assets/homesectorsextra.png"
 import PortfolioCard from "../components/portfoliocard"
 import SlickSlider from "react-slick"
 import BlogCards from "../components/blogcards"
-
+import FallbackImage from "../assets/blogtemp.png";
 import useFetch from "../services/useFetch";
 import { getHomepageData, getCompaniesPageData, getVerticalsPageData, getBlogsData, getAboutPageData } from "../services/api"
 import Loader from "../components/loader";
