@@ -8,7 +8,10 @@
  */
 
 // ─── Configuration ───────────────────────────────────────────────────────────
-$SENDGRID_API_KEY = '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';  // Replace this after deploying — edit in Hostinger File Manager
+// Real key is read from the SENDGRID_API_KEY environment variable if set;
+// otherwise paste your key in place of the placeholder below.
+// On Hostinger: edit this line in File Manager and replace the placeholder with your real SG.xxxx key.
+$SENDGRID_API_KEY = getenv('SENDGRID_API_KEY') ?: 'YOUR_SENDGRID_API_KEY_HERE';
 $TO_EMAILS        = [
     'navyugglobalventures@gmail.com',
     'dishan.m@ditechcdm.com',   // REMOVE before going live
