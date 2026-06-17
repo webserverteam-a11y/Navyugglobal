@@ -23,7 +23,7 @@ const INITIAL_FORM_DATA = {
 
 const CONTACT_FORM_ENDPOINT =
   import.meta.env.VITE_CONTACT_FORM_ENDPOINT ||
-  "https://lightgray-magpie-707312.hostingersite.com/wp-json/custom/v1/contact-form"
+  "https://darkgrey-dunlin-348583.hostingersite.com/contact-form.php"
 
 const MAX_ATTACHMENTS = 5
 const MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024
