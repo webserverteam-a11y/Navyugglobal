@@ -8,7 +8,7 @@
  */
 
 // ─── Configuration ───────────────────────────────────────────────────────────
-$SENDGRID_API_KEY = 'YOUR_SENDGRID_API_KEY_HERE';  // Replace this after deploying — edit in Hostinger File Manager
+$SENDGRID_API_KEY = ' ';  // Replace this after deploying — edit in Hostinger File Manager
 $TO_EMAILS        = ['navyugglobalventures@gmail.com', 'salvis.smglobal@gmail.com'];
 $FROM_EMAIL       = 'navyugglobalventures@gmail.com';       // Must be verified in SendGrid
 $FROM_NAME        = 'Navyug Global Ventures';
