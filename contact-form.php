@@ -8,8 +8,12 @@
  */
 
 // ─── Configuration ───────────────────────────────────────────────────────────
-$SENDGRID_API_KEY = ' ';  // Replace this after deploying — edit in Hostinger File Manager
-$TO_EMAILS        = ['navyugglobalventures@gmail.com', 'salvis.smglobal@gmail.com'];
+$SENDGRID_API_KEY = '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';  // Replace this after deploying — edit in Hostinger File Manager
+$TO_EMAILS        = [
+    'navyugglobalventures@gmail.com',
+    'dishan.m@ditechcdm.com',   // REMOVE before going live
+    'shubham.s@ditechcdm.com',  // REMOVE before going live
+];
 $FROM_EMAIL       = 'navyugglobalventures@gmail.com';       // Must be verified in SendGrid
 $FROM_NAME        = 'Navyug Global Ventures';
 // ─────────────────────────────────────────────────────────────────────────────
