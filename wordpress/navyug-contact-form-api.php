@@ -31,7 +31,6 @@ add_action('admin_init', function () {
     register_setting('navyug_contact_form_settings', 'navyug_sendgrid_api_key', array(
         'type' => 'string',
         'sanitize_callback' => 'sanitize_text_field',
-        'default' => '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',
     ));
 
     register_setting('navyug_contact_form_settings', 'navyug_contact_to_email', array(
@@ -82,8 +81,7 @@ function navyug_contact_form_submit(WP_REST_Request $request) {
     $sendgrid_api_key = navyug_contact_form_config(
         'NAVYUG_SENDGRID_API_KEY',
         'NAVYUG_SENDGRID_API_KEY',
-        'navyug_sendgrid_api_key',
-        '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'
+        'navyug_sendgrid_api_key'
     );
     $to_emails = navyug_contact_form_recipients(
         navyug_contact_form_config(
