@@ -135,6 +135,7 @@ function Contact() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const form = e.currentTarget
     setSubmitMessage("")
     setSubmitError("")
 
@@ -169,7 +170,7 @@ function Contact() {
       }
 
       setFormData({ ...INITIAL_FORM_DATA, attachments: [] })
-      e.currentTarget.reset()
+      form.reset()
       setSubmitMessage("Thank you. Your message has been sent successfully.")
     } catch (error) {
       setSubmitError(error.message || "Could not send your message. Please try again.")
