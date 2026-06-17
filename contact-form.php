@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // ─── Validate config ─────────────────────────────────────────────────────────
-if (empty($SENDGRID_API_KEY) || $SENDGRID_API_KEY === 'YOUR_SENDGRID_API_KEY_HERE') {
+if (empty(trim($SENDGRID_API_KEY)) || trim($SENDGRID_API_KEY) === 'YOUR_SENDGRID_API_KEY_HERE') {
     http_response_code(500);
     echo json_encode(['message' => 'Mail service not configured.']);
     exit;
