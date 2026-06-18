@@ -40,7 +40,7 @@ function Footer() {
         <div className="footerLinks">
           <h6>CONNECT</h6>
           <div className="links">
-            <a href="https://www.linkedin.com/company/navyug-global-ventures" target="_blank">LinkedIn</a>
+            <a href="https://www.linkedin.com/company/navyug-global-ventures-pvt-ltd/" target="_blank">LinkedIn</a>
             {/* <a href="/" target="_blank">X (Twitter)</a> */}
           </div>
         </div>
