@@ -44,6 +44,11 @@ add_action('admin_init', function () {
         'sanitize_callback' => 'sanitize_email',
         'default' => 'navyugglobalventures@gmail.com',
     ));
+
+    register_setting('navyug_contact_form_settings', 'navyug_recaptcha_secret_key', array(
+        'type' => 'string',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
 });
 
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links) {
@@ -112,6 +117,23 @@ function navyug_contact_form_submit(WP_REST_Request $request) {
             'success' => true,
             'message' => 'Message sent successfully.',
         ));
+    }
+
+    $recaptcha_secret = navyug_contact_form_config(
+        'NAVYUG_RECAPTCHA_SECRET_KEY',
+        'NAVYUG_RECAPTCHA_SECRET_KEY',
+        'navyug_recaptcha_secret_key'
+    );
+
+    if ($recaptcha_secret) {
+        $recaptcha_result = navyug_contact_form_verify_recaptcha(
+            $recaptcha_secret,
+            sanitize_text_field($request->get_param('recaptchaToken'))
+        );
+
+        if (is_wp_error($recaptcha_result)) {
+            return $recaptcha_result;
+        }
     }
 
     $first_name = sanitize_text_field($request->get_param('firstName'));
@@ -271,11 +293,70 @@ function navyug_contact_form_settings_page() {
                         <p class="description">This must be a verified sender in SendGrid.</p>
                     </td>
                 </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="navyug_recaptcha_secret_key">reCAPTCHA Secret Key</label>
+                    </th>
+                    <td>
+                        <input
+                            type="password"
+                            id="navyug_recaptcha_secret_key"
+                            name="navyug_recaptcha_secret_key"
+                            value="<?php echo esc_attr(get_option('navyug_recaptcha_secret_key')); ?>"
+                            class="regular-text"
+                            autocomplete="off"
+                        />
+                        <p class="description">reCAPTCHA v3 secret key from the Google reCAPTCHA admin console. Leave blank to disable verification.</p>
+                    </td>
+                </tr>
             </table>
             <?php submit_button(); ?>
         </form>
     </div>
     <?php
+}
+
+function navyug_contact_form_verify_recaptcha($secret, $token) {
+    if (empty($token)) {
+        return new WP_Error(
+            'navyug_contact_recaptcha_missing',
+            'reCAPTCHA verification failed. Please try again.',
+            array('status' => 422)
+        );
+    }
+
+    $response = wp_remote_post('https://www.google.com/recaptcha/api/siteverify', array(
+        'timeout' => 10,
+        'body' => array(
+            'secret' => $secret,
+            'response' => $token,
+        ),
+    ));
+
+    if (is_wp_error($response)) {
+        return new WP_Error(
+            'navyug_contact_recaptcha_unreachable',
+            'Could not verify reCAPTCHA. Please try again.',
+            array('status' => 502)
+        );
+    }
+
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+
+    $passed = !empty($body['success'])
+        && isset($body['score'])
+        && $body['score'] >= 0.5
+        && (empty($body['action']) || $body['action'] === 'contact_form');
+
+    if (!$passed) {
+        return new WP_Error(
+            'navyug_contact_recaptcha_failed',
+            'reCAPTCHA verification failed. Please try again.',
+            array('status' => 422)
+        );
+    }
+
+    return true;
 }
 
 function navyug_contact_form_collect_attachments(WP_REST_Request $request) {

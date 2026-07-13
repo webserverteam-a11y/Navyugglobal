@@ -12,6 +12,10 @@
 // otherwise paste your key in place of the placeholder below.
 // On Hostinger: edit this line in File Manager and replace the placeholder with your real SG.xxxx key.
 $SENDGRID_API_KEY = getenv('SENDGRID_API_KEY') ?: 'YOUR_SENDGRID_API_KEY_HERE';
+// Real key is read from the RECAPTCHA_SECRET_KEY environment variable if set;
+// otherwise paste your reCAPTCHA v3 secret key in place of the placeholder below.
+// Leave as the placeholder to disable reCAPTCHA verification.
+$RECAPTCHA_SECRET_KEY = getenv('RECAPTCHA_SECRET_KEY') ?: 'YOUR_RECAPTCHA_SECRET_KEY_HERE';
 $TO_EMAILS        = [
     'navyugglobalventures@gmail.com',
     'dishan.m@ditechcdm.com',   // REMOVE before going live
@@ -63,6 +67,17 @@ if ($website !== '') {
     http_response_code(200);
     echo json_encode(['success' => true, 'message' => 'Message sent successfully.']);
     exit;
+}
+
+// ─── reCAPTCHA verification ───────────────────────────────────────────────────
+if (trim($RECAPTCHA_SECRET_KEY) !== '' && trim($RECAPTCHA_SECRET_KEY) !== 'YOUR_RECAPTCHA_SECRET_KEY_HERE') {
+    $recaptchaToken = trim($_POST['recaptchaToken'] ?? '');
+
+    if ($recaptchaToken === '' || !verify_recaptcha($RECAPTCHA_SECRET_KEY, $recaptchaToken)) {
+        http_response_code(422);
+        echo json_encode(['message' => 'reCAPTCHA verification failed. Please try again.']);
+        exit;
+    }
 }
 
 // ─── Validation ──────────────────────────────────────────────────────────────
@@ -192,6 +207,34 @@ http_response_code(200);
 echo json_encode(['success' => true, 'message' => 'Message sent successfully.']);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+function verify_recaptcha(string $secret, string $token): bool
+{
+    $ch = curl_init('https://www.google.com/recaptcha/api/siteverify');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => http_build_query([
+            'secret' => $secret,
+            'response' => $token,
+        ]),
+        CURLOPT_TIMEOUT => 10,
+    ]);
+
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    if ($response === false) {
+        return false;
+    }
+
+    $result = json_decode($response, true);
+
+    return !empty($result['success'])
+        && isset($result['score'])
+        && $result['score'] >= 0.5
+        && (empty($result['action']) || $result['action'] === 'contact_form');
+}
+
 function normalise_files(array $file_group): array
 {
     if (!is_array($file_group['name'])) {

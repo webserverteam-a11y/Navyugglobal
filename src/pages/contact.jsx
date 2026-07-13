@@ -26,6 +26,13 @@ const CONTACT_FORM_ENDPOINT =
   import.meta.env.VITE_CONTACT_FORM_ENDPOINT ||
   "https://lightgray-magpie-707312.hostingersite.com/wp-json/custom/v1/contact-form"
 
+// reCAPTCHA site keys are public by design (unlike the secret key, which only lives server-side).
+const RECAPTCHA_SITE_KEY =
+  import.meta.env.VITE_RECAPTCHA_SITE_KEY ||
+  "6Le3mlEtAAAAABnLaIiy8lPApZAxcEG6IGpumJyj"
+
+const RECAPTCHA_ACTION = "contact_form"
+
 const MAX_ATTACHMENTS = 5
 const MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024
 const MAX_TOTAL_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024
@@ -38,6 +45,31 @@ function Contact() {
   const [submitting, setSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState("")
   const [submitError, setSubmitError] = useState("")
+
+  useEffect(() => {
+    if (document.querySelector("script[data-recaptcha]")) return
+
+    const script = document.createElement("script")
+    script.src = `https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`
+    script.async = true
+    script.dataset.recaptcha = "true"
+    document.body.appendChild(script)
+  }, [])
+
+  const getRecaptchaToken = () =>
+    new Promise((resolve, reject) => {
+      if (!window.grecaptcha) {
+        reject(new Error("reCAPTCHA failed to load. Please refresh and try again."))
+        return
+      }
+
+      window.grecaptcha.ready(() => {
+        window.grecaptcha
+          .execute(RECAPTCHA_SITE_KEY, { action: RECAPTCHA_ACTION })
+          .then(resolve)
+          .catch(() => reject(new Error("reCAPTCHA verification failed. Please try again.")))
+      })
+    })
 
   const handleChange = (e) => {
     const { name, value, files } = e.target
@@ -164,6 +196,9 @@ function Contact() {
 
     try {
       setSubmitting(true)
+
+      const recaptchaToken = await getRecaptchaToken()
+      submitData.append("recaptchaToken", recaptchaToken)
 
       const response = await fetch(CONTACT_FORM_ENDPOINT, {
         method: "POST",
