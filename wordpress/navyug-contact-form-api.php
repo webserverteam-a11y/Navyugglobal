@@ -106,6 +106,14 @@ function navyug_contact_form_submit(WP_REST_Request $request) {
         );
     }
 
+    $honeypot = sanitize_text_field($request->get_param('website'));
+    if (!empty($honeypot)) {
+        return rest_ensure_response(array(
+            'success' => true,
+            'message' => 'Message sent successfully.',
+        ));
+    }
+
     $first_name = sanitize_text_field($request->get_param('firstName'));
     $last_name = sanitize_text_field($request->get_param('lastName'));
     $email = sanitize_email($request->get_param('email'));

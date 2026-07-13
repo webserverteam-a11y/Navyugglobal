@@ -56,6 +56,14 @@ $phone     = trim(strip_tags($_POST['phone']     ?? ''));
 $company   = trim(strip_tags($_POST['company']   ?? ''));
 $jobTitle  = trim(strip_tags($_POST['jobTitle']  ?? ''));
 $message   = trim(strip_tags($_POST['message']   ?? ''));
+$website   = trim(strip_tags($_POST['website']   ?? '')); // honeypot
+
+// ─── Honeypot ─────────────────────────────────────────────────────────────────
+if ($website !== '') {
+    http_response_code(200);
+    echo json_encode(['success' => true, 'message' => 'Message sent successfully.']);
+    exit;
+}
 
 // ─── Validation ──────────────────────────────────────────────────────────────
 if (!$firstName || !$lastName || !$email || !$phone || !$message) {

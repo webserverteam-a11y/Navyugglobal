@@ -19,6 +19,7 @@ const INITIAL_FORM_DATA = {
   jobTitle: "",
   message: "",
   attachments: [],
+  website: "", // honeypot — must stay empty; bots tend to auto-fill it
 }
 
 const CONTACT_FORM_ENDPOINT =
@@ -138,6 +139,14 @@ function Contact() {
     const form = e.currentTarget
     setSubmitMessage("")
     setSubmitError("")
+
+    if (formData.website) {
+      // Honeypot tripped — pretend success without submitting.
+      setFormData({ ...INITIAL_FORM_DATA, attachments: [] })
+      form.reset()
+      setSubmitMessage("Thank you. Your message has been sent successfully.")
+      return
+    }
 
     if (!validateForm()) return
 
@@ -301,6 +310,22 @@ function Contact() {
               <img src={CH}/>
             </div>
             <form className="contactForm" onSubmit={handleSubmit}>
+
+              <div
+                aria-hidden="true"
+                style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", overflow: "hidden" }}
+              >
+                <label htmlFor="website">Leave this field blank</label>
+                <input
+                  type="text"
+                  id="website"
+                  name="website"
+                  tabIndex="-1"
+                  autoComplete="off"
+                  value={formData.website}
+                  onChange={handleChange}
+                />
+              </div>
 
               <div className="row">
 
